@@ -34,14 +34,18 @@ entry:
 		MOV		SP,0x7c00
 		MOV		DS,AX
 		
-;磁盘第二个扇区读到内存0x0820
+;读到内存0x0820
 		
 		MOV		AX,0X0820
-		MOV		ES,AX			;缓冲区地址段(加上AX)
+		MOV		ES,AX			;缓冲区地址段(加上BX)
 		MOV 	CH,0			;柱面
 		MOV		DH,0			;磁头
 		MOV 	CL,2			;扇区
-		
+readloop:
+		MOV		AL,[msg1]
+		MOV		AH,0x0e			; 显示一个文字
+		MOV		BX,15			; 指定字符颜色
+		INT		0x10			; 调用显卡BIOS
 		MOV		SI,0			;失败计数
 retry:	
 		MOV		AH,0X02			;读磁盘
@@ -49,7 +53,7 @@ retry:
 		MOV		BX,0			;缓冲的偏移地址
 		MOV		DL,0X00			;驱动器
 		INT		0x13			;调用BIOS磁盘操作
-		JNC		good				;BIOS返回值不为0跳转
+		JNC		next			;BIOS返回值不为0跳转
 		ADD		SI,1
 		CMP		SI,5
 		JAE		error
@@ -57,7 +61,14 @@ retry:
 		MOV		DL,0x00
 		INT 	0x13			;复位软盘状态
 		JMP		retry
-		
+next:
+		MOV		AX,ES			;缓冲区地址增加0x200
+		ADD 	AX,0X0020		;因为地址由ES,BX给出
+		MOV		ES,AX			;所以0x200>>16=0x20
+		ADD 	CL,1			;扇区号
+		CMP		CL,18
+		JBE		readloop
+
 
 
 fin:	
@@ -66,9 +77,6 @@ fin:
 
 error:
 		MOV 	SI,msg
-		JMP		putloop
-good:
-		MOV		SI,msg1
 putloop:
 		MOV		AL,[SI]
 		ADD		SI,1			; 给SI加1
@@ -84,10 +92,7 @@ msg:
 		DB		0x0a			; 换行
 		DB		0
 msg1:
-		DB		0x0a, 0x0a		; 换行2次
-		DB		"good"
-		DB		0x0a			; 换行
-		DB		0
+		DB		"+"
 		RESB	0x7dfe-$		; 填写0x00直到0x7dfe-0x7c00
 
 		DB		0x55, 0xaa
