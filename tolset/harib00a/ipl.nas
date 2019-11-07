@@ -42,14 +42,23 @@ entry:
 		MOV		DH,0			;磁头
 		MOV 	CL,2			;扇区
 		
+		MOV		SI,0			;失败计数
+retry:	
 		MOV		AH,0X02			;读磁盘
 		MOV		AL,1			;1个扇区
 		MOV		BX,0			;缓冲的偏移地址
 		MOV		DL,0X00			;驱动器
 		INT		0x13			;调用BIOS磁盘操作
-		JC		error			;BIOS返回值为0跳转
-		JMP		good
-;没报错的话进入死循环
+		JNC		good				;BIOS返回值不为0跳转
+		ADD		SI,1
+		CMP		SI,5
+		JAE		error
+		MOV		AH,0x00
+		MOV		DL,0x00
+		INT 	0x13			;复位软盘状态
+		JMP		retry
+		
+
 
 fin:	
 		HLT
@@ -74,19 +83,11 @@ msg:
 		DB		"load error"
 		DB		0x0a			; 换行
 		DB		0
-msg1
+msg1:
 		DB		0x0a, 0x0a		; 换行2次
-		DB		"GOOD!"
+		DB		"good"
 		DB		0x0a			; 换行
 		DB		0
-
 		RESB	0x7dfe-$		; 填写0x00直到0x7dfe-0x7c00
 
 		DB		0x55, 0xaa
-
-; 以下是启动区以外部分的输出
-;
-;		DB		0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
-;		RESB	4600
-;		DB		0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
-;		RESB	1469432
