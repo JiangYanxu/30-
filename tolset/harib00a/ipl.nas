@@ -33,25 +33,50 @@ entry:
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
-		MOV		ES,AX
+		
+;磁盘第二个扇区读到内存0x0820
+		
+		MOV		AX,0X0820
+		MOV		ES,AX			;缓冲区地址段(加上AX)
+		MOV 	CH,0			;柱面
+		MOV		DH,0			;磁头
+		MOV 	CL,2			;扇区
+		
+		MOV		AH,0X02			;读磁盘
+		MOV		AL,1			;1个扇区
+		MOV		BX,0			;缓冲的偏移地址
+		MOV		DL,0X00			;驱动器
+		INT		0x13			;调用BIOS磁盘操作
+		JC		error			;BIOS返回值为0跳转
+		JMP		good
+;没报错的话进入死循环
 
-		MOV		SI,msg
+fin:	
+		HLT
+		JMP		fin
+
+error:
+		MOV 	SI,msg
+		JMP		putloop
+good:
+		MOV		SI,msg1
 putloop:
 		MOV		AL,[SI]
 		ADD		SI,1			; 给SI加1
-		CMP		AL,0
+		CMP		AL,0			; 结束条件
 		JE		fin
 		MOV		AH,0x0e			; 显示一个文字
 		MOV		BX,15			; 指定字符颜色
 		INT		0x10			; 调用显卡BIOS
 		JMP		putloop
-fin:
-		HLT						; 让CPU停止等待指令
-		JMP		fin				; 无线循环
-
 msg:
 		DB		0x0a, 0x0a		; 换行2次
-		DB		"hello, world"
+		DB		"load error"
+		DB		0x0a			; 换行
+		DB		0
+msg1
+		DB		0x0a, 0x0a		; 换行2次
+		DB		"GOOD!"
 		DB		0x0a			; 换行
 		DB		0
 
