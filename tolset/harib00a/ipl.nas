@@ -1,6 +1,8 @@
 ; hello-os
 ; TAB=4
 
+CYLS	EQU		10				;宏定义CYLS是10
+
 		ORG		0x7c00			; 指明程序的装载地址
 ; 把机器语言装载到内存中的位置，同时改变了$符号的值：0x7c00
 
@@ -68,7 +70,26 @@ next:
 		ADD 	CL,1			;扇区号
 		CMP		CL,18
 		JBE		readloop
-
+		MOV		CL,1			;扇区号初始化
+		ADD		DH,1			;磁头号
+		MOV		AL,[msg1+1]
+		MOV		AH,0x0e			; 显示一个文字
+		MOV		BX,15			; 指定字符颜色
+		INT		0x10			; 调用显卡BIOS
+		CMP		DH,2			;磁头号小于2
+		JB 		readloop
+		MOV 	DH,0			;磁头号初始化
+		ADD 	CH,1			;柱面（磁道）
+		MOV		AL,[msg1+2]
+		MOV		AH,0x0e			; 显示一个文字
+		MOV		BX,15			; 指定字符颜色
+		INT		0x10			; 调用显卡BIOS
+		MOV		AL,[msg1+3]
+		MOV		AH,0x0e			; 显示一个文字
+		MOV		BX,15			; 指定字符颜色
+		INT		0x10			; 调用显卡BIOS
+		CMP		CH,CYLS
+		JB  	readloop
 
 
 fin:	
@@ -92,7 +113,9 @@ msg:
 		DB		0x0a			; 换行
 		DB		0
 msg1:
-		DB		"+"
+		DB		"+-*"
+		DB		0x0a
+		
 		RESB	0x7dfe-$		; 填写0x00直到0x7dfe-0x7c00
 
 		DB		0x55, 0xaa
