@@ -13,8 +13,8 @@ default :
 
 # ƒtƒ@ƒCƒ‹¶¬‹K‘¥
 
-ipl.bin : ipl.nas Makefile
-	$(NASK) ipl.nas ipl.bin ipl.lst
+ipl.bin : ipl10.nas Makefile
+	$(NASK) ipl10.nas ipl.bin ipl.lst
 
 haribote.sys : haribote.nas Makefile
 	$(NASK) haribote.nas haribote.sys haribote.lst

@@ -2,14 +2,11 @@
      2 00000000                                 ; TAB=4
      3 00000000                                 
      4                                          		ORG		0xc200			; 这个程序读到哪里？
-     5 0000C200                                 fin:
-     6 0000C200                                 
-     7 0000C200 A0 C20D                         		MOV		AL,[msg]
-     8 0000C203 B4 0E                           		MOV		AH,0x0e			; 显示一个文字
-     9 0000C205 BB 000F                         		MOV		BX,15			; 指定字符颜色
-    10 0000C208 CD 10                           		INT		0x10			; 调用显卡BIOS
-    11 0000C20A F4                              		HLT
-    12 0000C20B EB F3                           		JMP		fin
-    13 0000C20D                                 
-    14 0000C20D                                 msg:
-    15 0000C20D 40                              		DB  	"@"
+     5 0000C200 B0 13                           		MOV 	AL,0X13
+     6 0000C202 B4 00                           		MOV		AH,0X00
+     7 0000C204 CD 10                           		INT 	0X10
+     8 0000C206                                 
+     9 0000C206                                 fin:
+    10 0000C206                                 
+    11 0000C206 F4                              		HLT
+    12 0000C207 EB FD                           		JMP		fin
