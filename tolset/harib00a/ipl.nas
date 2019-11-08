@@ -90,9 +90,15 @@ next:
 		INT		0x10			; 调用显卡BIOS
 		CMP		CH,CYLS
 		JB  	readloop
-
+		
+		JMP		0xc200
 
 fin:	
+
+		MOV		AL,[msg1+4]
+		MOV		AH,0x0e			; 显示一个文字
+		MOV		BX,15			; 指定字符颜色
+		INT		0x10			; 调用显卡BIOS
 		HLT
 		JMP		fin
 
@@ -115,6 +121,7 @@ msg:
 msg1:
 		DB		"+-*"
 		DB		0x0a
+		DB		"!"
 		
 		RESB	0x7dfe-$		; 填写0x00直到0x7dfe-0x7c00
 
